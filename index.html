@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sổ Kiểm Tra Trường Tiểu học Nguyễn Du</title>
+  
+  <script src="SKT_KetNoi.js"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+  <style>
+    /* --- CSS MÀN HÌNH ĐĂNG NHẬP VÀ LOADER --- */
+    #instant-loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #ffffff; z-index: 2147483647; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+    .spinner-ring { width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid #1e3a8a; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 15px; }
+    .loader-text { font-family: 'Segoe UI', sans-serif; font-weight: bold; color: #1e3a8a; letter-spacing: 1px; font-size: 14px; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    
+    #main-wrapper { opacity: 0; transition: opacity 0.5s ease; display: none; } 
+    
+    #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f0fdf4; z-index: 999999; display: flex; flex-direction: column; justify-content: center; align-items: center; font-family: "Times New Roman", serif; }
+    .login-box { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; border-top: 5px solid #1e3a8a; }
+    .login-logo { width: 80px; height: 80px; margin-bottom: 15px; }
+    
+    .dev-badge-container { display: flex; align-items: center; background: linear-gradient(135deg, #1e3a8a 0%, #b91c1c 100%); padding: 4px 12px; border-radius: 50px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: 1px solid rgba(255,255,255,0.3); transition: all 0.3s ease; cursor: default; position: relative; overflow: hidden; }
+    .dev-badge-container:hover { transform: scale(1.02); box-shadow: 0 6px 15px rgba(0,0,0,0.2); }
+    .dev-icon-fly { font-size: 16px; margin-right: 8px; animation: bounce 2s infinite; }
+    .dev-text-group { display: flex; flex-direction: column; text-align: right; line-height: 1.1; }
+    .dev-name-label { font-weight: 800; font-size: 11px; color: #ffeb3b; text-transform: uppercase; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; letter-spacing: 1px; text-shadow: 1px 1px 1px rgba(0,0,0,0.3); }
+    .dev-role-label { font-size: 9px; color: #ffffff; opacity: 0.9; font-family: 'Segoe UI', sans-serif; letter-spacing: 0.5px; }
+    @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+
+    /* --- CSS KHÔI PHỤC LẠI 100% NHƯ BAN ĐẦU CỦA THẦY ĐÃ LỌC SẠCH KHOẢNG TRẮNG LỖI --- */
+    :root { --primary-blue: #1e3a8a; --brand-red: #b91c1c; --grid-border: #9ca3af; --step-gray: #d1d5db; --reset-color: #dc2626; --submit-green: #059669; }
+    body { font-family: "Times New Roman", serif; background: #f3f4f6; padding: 16px; margin: 0; box-sizing: border-box; }
+    *, *:before, *:after { box-sizing: inherit; }
+
+    .school-header { display: flex; align-items: center; justify-content: space-between; width: 1550px; max-width: 99%; margin: 0 auto 10px auto !important; }
+    .logo-group { display: flex; align-items: center; }
+    .school-logo { width: 1cm; height: 1cm; object-fit: contain; margin-right: 10px; padding: 0px; }
+    .school-name { font-weight: bold; font-size: 17px; color: var(--primary-blue); text-transform: uppercase; }
+    .loading-spin { background-image: url('https://i.gifer.com/ZKZg.gif') !important; background-repeat: no-repeat !important; background-position: right 8px center !important; background-size: 16px !important; background-color: #fffde7 !important; }
+    
+    #so_wrapper { width: 1550px; max-width: 99%; margin: auto; background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .table-container { overflow-x: auto; margin-top: 10px; border: 1px solid var(--grid-border); }
+    table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+    th { background: #eff6ff; color: var(--primary-blue); border: 1px solid var(--grid-border); padding: 8px 4px; font-size: 14px; text-align: center; }
+    td { border: 1px solid var(--grid-border); vertical-align: middle; background: #fff; padding: 0; position: relative; } 
+    
+    .cell-input { width: 100%; border: none; padding: 8px 5px; font-family: "Times New Roman"; font-size: 15px; box-sizing: border-box; display: block; outline: none; resize: none; min-height: 35px; color: #000; }
+    .cell-input:disabled { background-color: #f1f5f9; color: #334155 !important; opacity: 1; -webkit-text-fill-color: #334155; }
+    .cell-input::placeholder { color: #94a3b8 !important; opacity: 0.5; font-style: italic; font-size: 13px; }
+    #mainTable .cell-input::placeholder { opacity: 0.4; }
+
+    textarea.cell-input { overflow: hidden; resize: none; padding-top: 5px; }
+    .f-input { padding: 8px 10px; border: 1px solid #ccc; border-radius: 4px; width: 100%; box-sizing: border-box; }
+    .filter-section { display: grid; grid-template-columns: 220px 220px 220px 120px 1fr; gap: 15px; margin-top: 15px; }
+    .f-item:nth-child(5) { grid-column: 5; display: flex; flex-direction: column; justify-self: end; text-align: right; }
+    .f-item:nth-child(5) .f-input { width: 180px; margin-left: auto; }
+    .f-item span { display: block; font-size: 14px; font-weight: bold; margin-bottom: 5px; color: #333; }
+
+    .btn-save { margin-top: 20px; padding: 12px 40px; background: var(--primary-blue); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; float: right; }
+    .btn-save:disabled { background-color: #ccc; cursor: not-allowed; }
+    .btn-row { padding: 4px 12px; color: white; border: none; border-radius: 20px; cursor: pointer; font-size: 11px; font-weight: bold; margin-left: 10px; }
+    .btn-reset { background: var(--reset-color); }
+    .btn-submit { background: var(--submit-green); }
+    .refresh-btn { background: #3b82f6; color: white; border: none; border-radius: 4px; padding: 4px 10px; font-size: 12px; cursor: pointer; margin-left: 5px; }
+
+    .status-stepper { display: flex; align-items: center; margin-top: 10px; gap: 10px; font-size: 12px; border-top: 1px dashed #eee; padding-top: 3px; }
+    .step { padding: 4px 15px; border-radius: 20px; border: 1px solid var(--step-gray); transition: 0.3s; }
+    .step.active { background: var(--primary-blue); color: white; border-color: var(--primary-blue); }
+    .step.completed { background: #10b981; color: white; border-color: #10b981; }
+    #user_display { margin-left: auto; font-style: italic; color: #64748b; font-size: 13px; }
+
+    .ma-ho-so-cell { font-size: 14px !important; font-weight: bold; text-align: center; vertical-align: middle; background: #f9fafb; padding: 8px 5px; }
+    .link-view-btn { display: inline-block; padding: 6px 15px; background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; font-weight: bold; font-size: 14px; text-decoration: none; border-radius: 4px; transition: 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+    .link-view-btn:hover { background: #2563eb; color: white; border-color: #2563eb; }
+
+    .link-edit-corner { position: absolute; bottom: 2px; right: 2px; font-size: 11px; color: #d97706; cursor: pointer; opacity: 0.8; padding: 2px 4px; background: #fffbeb; border-radius: 3px; }
+    .link-edit-corner:hover { opacity: 1; font-weight: bold; background: #fef3c7; color: #b45309; }
+    .link-edit-corner.disabled { pointer-events: none; opacity: 0; display: none; }
+
+    .tab-container { display: flex; margin-bottom: 5px; border-bottom: 2px solid #e5e7eb; }
+    .tab-button { padding: 6px; background: #f3f4f6; border: 1px solid #e5e7eb; border-bottom: none; border-radius: 8px 8px 0 0; margin-right: 5px; font-weight: bold; color: #6b7280; cursor: pointer; }
+    .tab-button.active { background: #1e3a8a; color: white; border-color: #1e3a8a; }
+    .tab-content { display: none; padding-top: 15px; }
+    .tab-content.active { display: block; }
+
+    #modal_overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center; }
+    #modal_box { background: white; padding: 30px; border-radius: 10px; text-align: center; min-width: 300px; }
+    .modal-btn { background: #2563eb; color: white; padding: 8px 20px; border: none; border-radius: 4px; cursor: pointer; margin-top: 10px; font-weight: bold; }
+
+    .btn-icon-del { background: none; border: none; cursor: pointer; color: #ef4444; font-size: 16px; padding: 4px; border-radius: 4px; }
+    .btn-icon-del:hover { background-color: #fee2e2; }
+    .btn-icon-del:disabled { color: #d1d5db; cursor: not-allowed; pointer-events: none; }
+    
+    .add-row-container { text-align: left; margin-top: 5px; padding-left: 5px; }
+    .btn-add-row { background-color: #10b981; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 13px; display: inline-flex; align-items: center; gap: 5px; }
+    .btn-add-row:hover { background-color: #059669; }
+
+    .btn-upload-icon { background: #f3f4f6; border: 1px solid #d1d5db; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 14px; }
+    .btn-upload-icon:disabled { opacity: 0.5; cursor: not-allowed; }
+    .evidence-uploaded { background-color: #f0fdf4; }
+  </style>
+</head>
+<body>
+
+  <div id="login-overlay">
+    <div class="login-box">
+      <img src="https://i.ibb.co/8Df1xXsN/Logo-nguyen-du.png" class="login-logo">
+      <h2 style="color: #b91c1c; margin-top: 0; text-transform: uppercase;">Sổ Kiểm Tra Nội Bộ</h2>
+      <h3 style="color: #1e3a8a; margin-bottom: 25px;">Trường Tiểu học Nguyễn Du</h3>
+      <p style="font-size: 14px; color: #666; font-style: italic; margin-bottom: 20px;">Hệ thống yêu cầu xác thực bằng Email được cấp quyền</p>
+      
+      <div id="g_id_onload"
+           data-client_id="148147324590-l5v7bjb5k03gkbs0s9cqk1t90093i028.apps.googleusercontent.com"
+           data-callback="handleCredentialResponse"
+           data-auto_prompt="false">
+      </div>
+      <div class="g_id_signin" data-type="standard" data-size="large" data-theme="outline" data-text="sign_in_with" data-shape="rectangular" data-logo_alignment="center"></div>
+      
+      <div style="margin-top: 30px; font-size: 12px; color: #999; font-weight: bold;">Nhà phát triển: HOÀNG NGỌC LÂM</div>
+    </div>
+  </div>
+
+  <div id="instant-loader" style="display: none;">
+    <div class="spinner-ring"></div>
+    <div class="loader-text">ĐANG KẾT NỐI HỆ THỐNG...</div>
+  </div>
+
+  <div id="main-wrapper">
+    <div class="school-header">
+      <div class="logo-group">
+        <img src="https://i.ibb.co/8Df1xXsN/Logo-nguyen-du.png" class="school-logo">
+        <span class="school-name">Trường Tiểu học Nguyễn Du</span>
+      </div>
+      <div class="dev-badge-container">
+        <div class="dev-icon-fly">🚀</div>
+        <div class="dev-text-group">
+          <div class="dev-name-label">HOÀNG NGỌC LÂM</div>
+          <div class="dev-role-label">System Developer</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="so_wrapper">
+      <div class="tab-container">
+        <button class="tab-button active" onclick="switchTab('TabNhapLieu', this)">📝 GHI SỔ</button>
+        <button class="tab-button" onclick="switchTab('TabTimKiem', this)">🔍 THỐNG KÊ</button>
+        <button class="tab-button" onclick="switchTab('TabHuongDan', this)">ℹ️ HƯỚNG DẪN</button>
+        <button class="tab-button" onclick="logoutGoogle()" style="margin-left:auto; color:#dc2626; border-color:#fca5a5; background:#fef2f2;">🚪 ĐĂNG XUẤT</button>
+      </div>
+      
+      <div id="TabNhapLieu" class="tab-content active"></div>
+      <div id="TabTimKiem" class="tab-content"></div>
+      <div id="TabHuongDan" class="tab-content">
+        <h3>Hướng dẫn sử dụng:</h3>
+        <p><b>1. Nhập liệu:</b> Chọn đủ thông tin GV, Người KT. Bấm "Thêm dòng" để nhập nhiều nội dung.</p>
+        <p><b> Tác giả: Hoàng Ngọc Lâm </b></p>
+      </div>
+    </div>
+
+    <div id="MinhChungContainer"></div>
+
+    <div id="modal_overlay">
+      <div id="modal_box">
+        <h3>✅ THÔNG BÁO</h3>
+        <p id="modal_message"></p>
+        <button class="modal-btn" onclick="document.getElementById('modal_overlay').style.display='none'">ĐÓNG</button>
+      </div>
+    </div>
+    
+    <div id="access_denied_msg" style="display:none; text-align:center; margin-top:50px;">
+      <h2 style="color:#b91c1c;">⛔ TRUY CẬP BỊ TỪ CHỐI</h2>
+      <p id="denied_reason" style="font-weight:bold;"></p>
+      <button class="modal-btn" onclick="logoutGoogle()" style="background:#b91c1c; border:none; margin-top:20px;">ĐĂNG NHẬP TÀI KHOẢN KHÁC</button>
+    </div>
+  </div>
+
+  <script>
+    // --- XỬ LÝ ĐĂNG NHẬP GOOGLE ---
+    function handleCredentialResponse(response) {
+      const payload = decodeJwtResponse(response.credential);
+      const email = payload.email;
+      
+      sessionStorage.setItem("SKT_USER_EMAIL", email);
+      window.SKT_GLOBAL_EMAIL = email; 
+      
+      document.getElementById('login-overlay').style.display = 'none';
+      document.getElementById('instant-loader').style.display = 'flex';
+      
+      checkPermissionAndLoad();
+    }
+
+    function decodeJwtResponse(token) {
+      let base64Url = token.split('.')[1];
+      let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      let jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+      return JSON.parse(jsonPayload);
+    }
+
+    function logoutGoogle() {
+      sessionStorage.removeItem("SKT_USER_EMAIL");
+      window.SKT_GLOBAL_EMAIL = null;
+      location.reload(); 
+    }
+
+    window.onload = function() {
+      const storedEmail = sessionStorage.getItem("SKT_USER_EMAIL");
+      if(storedEmail) {
+        window.SKT_GLOBAL_EMAIL = storedEmail; 
+        document.getElementById('login-overlay').style.display = 'none';
+        document.getElementById('instant-loader').style.display = 'flex';
+        checkPermissionAndLoad();
+      }
+    };
+
+    // --- HÀM BẢO MẬT KÉP: CHỐNG LỖI CACHE TỪ MÁY CHỦ BẰNG CÁCH QUÉT LẠI TRÊN GIAO DIỆN ---
+    function checkPermissionAndLoad() {
+      google.script.run.withSuccessHandler(data => {
+        
+        // Chuẩn hóa email hiện tại để quét
+        const currentEmail = String(window.SKT_GLOBAL_EMAIL || sessionStorage.getItem("SKT_USER_EMAIL") || "").toLowerCase().replace(/[\s\uFEFF\xA0]+/g, '');
+        let isFound = false;
+        
+        // Đối chiếu email với Danh sách Giáo viên và Người kiểm tra vừa lấy về
+        if(data.giaoVienData && data.giaoVienData.some(x => String(x.email).toLowerCase().replace(/[\s\uFEFF\xA0]+/g, '') === currentEmail)) isFound = true;
+        if(data.nguoiKTData && data.nguoiKTData.some(x => String(x.email).toLowerCase().replace(/[\s\uFEFF\xA0]+/g, '') === currentEmail)) isFound = true;
+
+        // CHỐT CHẶN TỐI THƯỢNG: Máy chủ báo sai, hoặc Web tìm không thấy tên -> KHÓA!
+        if (data.hasPermission === false || !isFound) {
+          document.getElementById('instant-loader').style.display = 'none';
+          document.getElementById('main-wrapper').style.display = 'block';
+          setTimeout(() => { document.getElementById('main-wrapper').style.opacity = '1'; }, 50);
+          
+          // Giấu toàn bộ khu vực làm việc (Đúng theo thiết kế DOM của thầy)
+          const header = document.querySelector('.school-header');
+          if (header) header.style.display = 'none';
+          document.getElementById('so_wrapper').style.display = 'none';
+          document.getElementById('MinhChungContainer').style.display = 'none';
+          
+          // Hiện cảnh báo lỗi
+          document.getElementById('access_denied_msg').style.display = 'block';
+          document.getElementById('denied_reason').innerText = "⛔ TÀI KHOẢN KHÔNG CÓ QUYỀN TRUY CẬP!\nEmail của bạn không có trong hệ thống.\nVui lòng liên hệ Admin.";
+        } else {
+          // NẾU HỢP LỆ -> NẠP MODULE CHUẨN
+          loadSystemModules();
+        }
+      }).SKT_getInitialData();
+    }
+
+    // --- TẢI CÁC MODULE HTML VỚI CHỐT CHẶN VÀ CHỐNG CACHE ---
+    async function loadSystemModules() {
+      try {
+        const cacheBuster = "?v=" + new Date().getTime(); 
+        
+        const [resNhapLieu, resTimKiem, resMinhChung] = await Promise.all([
+            fetch('./SKT_NhapLieu.html' + cacheBuster),
+            fetch('./SKT_TimKiem.html' + cacheBuster),
+            fetch('./SKT_MinhChung.html' + cacheBuster)
+        ]);
+
+        if (!resNhapLieu.ok) throw new Error("Không tìm thấy file SKT_NhapLieu.html");
+        if (!resTimKiem.ok) throw new Error("Không tìm thấy file SKT_TimKiem.html");
+        if (!resMinhChung.ok) throw new Error("Không tìm thấy file SKT_MinhChung.html");
+
+        document.getElementById('TabNhapLieu').innerHTML = await resNhapLieu.text();
+        document.getElementById('TabTimKiem').innerHTML = await resTimKiem.text();
+        document.getElementById('MinhChungContainer').innerHTML = await resMinhChung.text();
+
+        executeScripts(document.getElementById('TabNhapLieu'));
+        executeScripts(document.getElementById('TabTimKiem'));
+        executeScripts(document.getElementById('MinhChungContainer'));
+
+        setTimeout(() => {
+            try { if (typeof loadData === 'function') loadData(); } catch(e) {}
+            try { if (typeof loadFolders === 'function') loadFolders(); } catch(e) {}
+            try { if (typeof addNewRow === 'function' && document.getElementById('tableContent').rows.length === 0) addNewRow(); } catch(e) {}
+        }, 800);
+
+      } catch (e) {
+        alert("LỖI KẾT NỐI TỆP: " + e.message);
+      }
+
+      setTimeout(function() { 
+          document.getElementById('instant-loader').style.display = 'none'; 
+          document.getElementById('main-wrapper').style.display = 'block';
+          setTimeout(() => { document.getElementById('main-wrapper').style.opacity = '1'; }, 50);
+      }, 500); 
+    }
+
+    function executeScripts(element) {
+        const scripts = element.querySelectorAll('script');
+        scripts.forEach(oldScript => {
+            const newScript = document.createElement('script');
+            Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+            newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+            oldScript.parentNode.replaceChild(newScript, oldScript);
+        });
+    }
+
+    function switchTab(id, btn) {
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      if(btn) btn.classList.add('active');
+    }
+  </script>
+</body>
+
+</html>
+
+

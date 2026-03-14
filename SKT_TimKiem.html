@@ -1,0 +1,500 @@
+<style>
+  /* --- 1. CSS TỐI ƯU SIÊU NHỎ GỌN --- */
+  .header-card {
+    background: white; padding: 5px 10px; border-radius: 6px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05); margin-bottom: 5px; border-top: 3px solid #b91c1c; 
+  }
+  .page-title {
+    text-align: center; font-size: 24px; font-weight: 900; color: #b91c1c; 
+    margin: 5px 0 8px 0; text-transform: uppercase; letter-spacing: 1px; line-height: 1.1;
+  }
+  
+  /* --- 2. CSS BỘ LỌC --- */
+  .filter-section-search { 
+    display: grid; 
+    grid-template-columns: 180px 180px 130px 100px 100px 1fr; 
+    gap: 8px; margin-top: 5px; align-items: end; justify-content: center; 
+  }
+  .filter-section-search .f-item { text-align: left !important; width: 100%; }
+  .filter-section-search .f-item span { 
+    font-size: 13px; margin-bottom: 2px; font-weight: bold; color: #1e3a8a; display: block; text-align: left; 
+  }
+  .filter-section-search .f-input { width: 100% !important; font-size: 13px; padding: 3px 5px; height: 30px; border: 1px solid #ccc; border-radius: 3px; }
+
+  /* Nút bấm */
+  .search-btn { background: #2563eb; color: white; border: none; border-radius: 3px; cursor: pointer; font-weight: bold; height: 30px; width: 60px; font-size: 13px; }
+  .search-btn:disabled { background: #9ca3af; cursor: not-allowed; } 
+  .reset-search-btn { background: #dc2626; color: white; border: none; border-radius: 3px; cursor: pointer; font-weight: bold; height: 30px; width: 35px; margin-left: 5px; font-size: 13px; }
+  
+  /* Nút in ấn */
+  .print-btn { 
+    background: #7c3aed; color: white; border: none; border-radius: 3px; 
+    cursor: pointer; font-weight: bold; height: 30px; width: 45px; margin-left: 5px; 
+    font-size: 13px; box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  }
+  .print-btn:hover { background: #6d28d9; }
+  .print-btn:disabled { background: #ccc; cursor: wait; }
+  .print-link { margin-left: 10px; font-size: 13px; font-weight: bold; color: #059669; text-decoration: none; border-bottom: 2px solid #059669; padding-bottom: 2px; animation: fadeIn 0.5s; white-space: nowrap; }
+  .print-link:hover { color: #047857; border-color: #047857; }
+
+  /* --- 3. CSS BẢNG THỐNG KÊ --- */
+  .stats-container { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; padding-top: 8px; border-top: 1px dashed #ddd; justify-content: center; }
+  .stat-group { flex: 1; min-width: 150px; max-width: 200px; background: #fff; border: 1px solid #e5e7eb; border-radius: 4px; padding: 3px 6px; }
+  .sg-general { border-left: 3px solid #2563eb; } .sg-hoso { border-left: 3px solid #059669; } .sg-day { border-left: 3px solid #d97706; } .sg-ks { border-left: 3px solid #7c3aed; } .sg-khac { border-left: 3px solid #db2777; }
+  .sg-title { font-size: 12px; font-weight: 900; color: #374151; margin-bottom: 3px; border-bottom: 1px solid #f3f4f6; padding-bottom: 1px; }
+  .sg-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 1px; color: #000; }
+  .sg-row span:last-child { font-weight: bold; color: #1e40af; font-size: 14px; }
+  .sg-total { color: #dc2626 !important; font-size: 15px !important; font-weight: 900 !important; }
+
+  /* --- 4. CSS BẢNG KẾT QUẢ --- */
+  .table-container-search { 
+    width: 100%; 
+    overflow-x: auto; 
+    overflow-y: auto; 
+    max-height: 78vh; 
+    border: 1px solid #9ca3af; 
+    background: #fff; 
+    padding-bottom: 50px; 
+  }
+  .result-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  .result-table thead th { position: sticky; top: 0; z-index: 10; background: #e0f2fe; border-bottom: 1px solid #64748b; }
+  .result-table th { color: #0c4a6e; font-weight: bold; text-align: center; padding: 6px 4px; border-right: 1px solid #cbd5e1; font-size: 13px; border: 1px solid #cbd5e1; }
+  
+  .result-table td { 
+    border: 1px solid #cbd5e1; 
+    padding: 4px; 
+    vertical-align: top; 
+    color: #333; 
+    font-size: 13px; 
+    overflow: visible; 
+  }
+  
+  .result-link { color: #2563eb; text-decoration: underline; cursor: pointer; font-weight: bold; }
+  .no-result { text-align: center; font-style: italic; color: #666; padding: 20px; }
+  .design-footer { text-align: center; margin-top: 5px; padding-top: 5px; border-top: 1px solid #e5e7eb; font-size: 11px; color: #1e3a8a; font-weight: bold; font-style: italic; font-family: "Times New Roman", serif; }
+
+  /* --- 5. CSS HỘP THÔNG BÁO --- */
+  .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 9999; }
+  .modal-box { background: white; padding: 20px; border-radius: 8px; width: 350px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+  .modal-msg { font-size: 15px; margin-bottom: 15px; color: #333; font-weight: 500; }
+  .modal-btn { background: #2563eb; color: white; padding: 8px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+  .modal-btn:hover { background: #1d4ed8; }
+
+  /* --- 6. CSS NỔI NỘI DUNG --- */
+  .opinion-cell-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+
+  .opinion-content {
+    display: -webkit-box;
+    -webkit-line-clamp: 2; 
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 13px;
+    color: #333;
+    cursor: help;
+    transition: all 0.2s ease;
+  }
+
+  .opinion-cell-wrapper:hover .opinion-content {
+    position: absolute;
+    top: -5px; 
+    left: -5px; 
+    width: auto;
+    min-width: 300px;  
+    max-width: 450px;  
+    height: auto;
+    background-color: white;
+    color: black;
+    padding: 12px;
+    border: 1px solid #0d6efd;
+    border-radius: 6px;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.4); 
+    z-index: 9999; 
+    white-space: normal;
+    -webkit-line-clamp: unset; 
+    overflow: visible;
+    text-align: left;
+  }
+  
+  /* Đã bổ sung CSS cho các nút file nhỏ gọn trong bảng */
+  .file-badge {
+    display: inline-block;
+    text-decoration: none;
+    font-size: 11px;
+    cursor: pointer;
+    margin: 2px;
+    padding: 2px 5px;
+    background: #e0f2fe;
+    border: 1px solid #bae6fd;
+    border-radius: 4px;
+    color: #0369a1;
+    font-weight: bold;
+    white-space: nowrap;
+  }
+  .file-badge:hover {
+    background: #bae6fd;
+    color: #0c4a6e;
+  }
+</style>
+
+<div class="header-card">
+  <div class="page-title">TRA CỨU HỒ SƠ - THỐNG KÊ</div>
+  
+  <div class="filter-section-search">
+    <div class="f-item"><span>Giáo viên</span><select id="s_gv" class="f-input"><option value="">-- Tất cả --</option></select></div>
+    <div class="f-item"><span>Người kiểm tra</span><select id="s_nkt" class="f-input"><option value="">-- Tất cả --</option></select></div>
+    <div class="f-item"><span>Bộ phận</span><select id="s_bp" class="f-input"><option value="">-- Tất cả --</option></select></div>
+    <div class="f-item"><span>Từ ngày</span><input type="text" id="s_from" class="f-input text-center" placeholder="dd/mm/yyyy" oninput="formatDay(event)"></div>
+    <div class="f-item"><span>Đến ngày</span><input type="text" id="s_to" class="f-input text-center" placeholder="dd/mm/yyyy" oninput="formatDay(event)"></div>
+    <div class="f-item" style="display:flex; align-items: flex-end;">
+      <button id="btn_search_main" class="search-btn" onclick="doSearch()">🔍 Tìm</button>
+      <button class="reset-search-btn" onclick="clearSearch()">↻</button>
+      <button class="print-btn" onclick="printReport()" title="Xuất kết quả ra Google Doc">🖨️</button>
+      <span id="print_link_container"></span>
+    </div>
+  </div>
+
+  <div class="stats-container" id="dashboard_stats" style="display:none;">
+    <div class="stat-group sg-general">
+      <div class="sg-title">TỔNG QUAN</div>
+      <div class="sg-row"><span style="color:#b91c1c; font-weight:bold;">TỔNG SỐ:</span> <span id="st_total" class="sg-total">0</span></div>
+      <div class="sg-row"><span>BGH:</span> <span id="st_bgh">0</span></div>
+      <div class="sg-row"><span>Tổ CM:</span> <span id="st_tcm">0</span></div>
+      <div class="sg-row"><span>Văn phòng:</span> <span id="st_tvp">0</span></div>
+    </div>
+    <div class="stat-group sg-hoso">
+      <div class="sg-title">XL HỒ SƠ</div>
+      <div class="sg-row"><span style="color:#b91c1c; font-weight:bold;">TỔNG SỐ:</span> <span id="st_hs_total" class="sg-total">0</span></div>
+      <div class="sg-row"><span>Tốt:</span> <span id="st_hs_tot">0</span></div>
+      <div class="sg-row"><span>Khá:</span> <span id="st_hs_kha">0</span></div>
+      <div class="sg-row"><span>TB:</span> <span id="st_hs_tb">0</span></div>
+    </div>
+    <div class="stat-group sg-day">
+      <div class="sg-title">XL GIỜ DẠY</div>
+      <div class="sg-row"><span style="color:#b91c1c; font-weight:bold;">TỔNG SỐ:</span> <span id="st_gd_total" class="sg-total">0</span></div>
+      <div class="sg-row"><span>Giỏi:</span> <span id="st_gd_gioi">0</span></div>
+      <div class="sg-row"><span>Khá:</span> <span id="st_gd_kha">0</span></div>
+      <div class="sg-row"><span>TB:</span> <span id="st_gd_tb">0</span></div>
+      <div class="sg-row"><span>Yếu:</span> <span id="st_gd_yeu">0</span></div>
+    </div>
+    <div class="stat-group sg-ks">
+      <div class="sg-title">XL KHẢO SÁT</div>
+      <div class="sg-row"><span style="color:#b91c1c; font-weight:bold;">TỔNG SỐ:</span> <span id="st_ks_total" class="sg-total">0</span></div>
+      <div class="sg-row"><span>Tốt:</span> <span id="st_ks_tot">0</span></div>
+      <div class="sg-row"><span>Khá:</span> <span id="st_ks_kha">0</span></div>
+      <div class="sg-row"><span>Đạt:</span> <span id="st_ks_dat">0</span></div>
+      <div class="sg-row"><span>Yếu:</span> <span id="st_ks_yeu">0</span></div>
+    </div>
+    <div class="stat-group sg-khac">
+      <div class="sg-title">XL KHÁC</div>
+      <div class="sg-row"><span style="color:#b91c1c; font-weight:bold;">TỔNG SỐ:</span> <span id="st_khac_total" class="sg-total">0</span></div>
+      <div class="sg-row"><span>Tốt:</span> <span id="st_khac_tot">0</span></div>
+      <div class="sg-row"><span>Khá:</span> <span id="st_khac_kha">0</span></div>
+      <div class="sg-row"><span>TB:</span> <span id="st_khac_tb">0</span></div>
+      <div class="sg-row"><span>Chưa đạt:</span> <span id="st_khac_cd">0</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="table-container-search">
+  <table class="result-table">
+    <thead>
+      <tr>
+        <th style="width:40px">STT</th>
+        <th style="width:80px">Thời gian</th>
+        <th style="width:110px">Giáo viên</th>
+        <th style="width:110px">Người KT</th>
+        <th style="width:100px">Bộ phận</th>
+        <th style="width:150px">Nội dung</th> 
+        <th style="width:180px">Ưu điểm</th>  
+        <th style="width:180px">Tồn tại</th>
+        <th style="width:180px">Biện pháp</th>
+        <th style="width:50px">XL HS</th>
+        <th style="width:50px">XL GD</th>
+        <th style="width:50px">XL KS</th>
+        <th style="width:50px">XL khác</th>
+        <th style="width:160px">Ý kiến</th>
+        <th style="width:100px">Ký tên</th>
+        <th style="width:70px">File</th>
+        <th style="width:110px">Mã HS</th>
+      </tr>
+    </thead>
+    <tbody id="searchBody">
+      <tr><td colspan="17" class="no-result">Vui lòng chọn điều kiện và nhấn Tìm kiếm</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="design-footer">Thiết kế: Hoàng Ngọc Lâm</div>
+
+<div id="tk_modal_overlay" class="modal-overlay">
+  <div class="modal-box">
+    <div id="tk_modal_message" class="modal-msg"></div>
+    <button class="modal-btn" onclick="closeTkModal()">Đóng</button>
+  </div>
+</div>
+
+<script>
+  (function initSearch() {
+    const d = new Date();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const yyyy = d.getFullYear();
+    const dd = String(d.getDate()).padStart(2, '0');
+    
+    document.getElementById('s_from').value = `01/${mm}/${yyyy}`;
+    document.getElementById('s_to').value = `${dd}/${mm}/${yyyy}`;
+
+    const filters = document.querySelectorAll('.filter-section-search .f-input');
+    filters.forEach(input => {
+        input.addEventListener("keydown", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault(); 
+                doSearch(); 
+            }
+        });
+    });
+
+    google.script.run.withSuccessHandler(data => {
+      if (data.hasPermission === false) {
+          showTkModal(data.message); 
+          document.getElementById('btn_search_main').disabled = true; 
+          document.querySelector('.print-btn').disabled = true; 
+          document.getElementById('searchBody').innerHTML = '<tr><td colspan="17" class="no-result" style="color:red; font-weight:bold;">' + data.message + '</td></tr>';
+          return;
+      }
+      const gv = document.getElementById('s_gv');
+      const nkt = document.getElementById('s_nkt');
+      const bp = document.getElementById('s_bp');
+      data.gvList.forEach(x => gv.add(new Option(x, x)));
+      data.nktList.forEach(x => nkt.add(new Option(x, x)));
+      data.bpList.forEach(x => bp.add(new Option(x, x)));
+    }).SKT_getSearchFilterData();
+  })();
+
+  function renderContentWithHover(content) {
+    if (!content) return "";
+    return `
+      <div class="opinion-cell-wrapper">
+        <div class="opinion-content">${content}</div>
+      </div>
+    `;
+  }
+
+  function doSearch() {
+    const criteria = {
+      gv: document.getElementById('s_gv').value,
+      nkt: document.getElementById('s_nkt').value,
+      bp: document.getElementById('s_bp').value,
+      fromDate: document.getElementById('s_from').value,
+      toDate: document.getElementById('s_to').value
+    };
+
+    document.getElementById('dashboard_stats').style.display = 'none';
+    document.getElementById('print_link_container').innerHTML = ""; 
+    const tbody = document.getElementById('searchBody');
+    tbody.innerHTML = '<tr><td colspan="17" class="no-result" style="color:blue">⏳ Đang tải dữ liệu...</td></tr>';
+
+    google.script.run
+    .withFailureHandler(error => {
+        showTkModal(error.message);
+        tbody.innerHTML = `<tr><td colspan="17" class="no-result" style="color:red">❌ ${error.message}</td></tr>`;
+    })
+    .withSuccessHandler(results => {
+      tbody.innerHTML = "";
+      if (results.length > 0) {
+        document.getElementById('dashboard_stats').style.display = 'flex';
+        calculateStats(results);
+      } else {
+        document.getElementById('dashboard_stats').style.display = 'none';
+        tbody.innerHTML = '<tr><td colspan="17" class="no-result">❌ Không tìm thấy kết quả nào.</td></tr>';
+        return;
+      }
+      results.forEach((r, i) => {
+        const tr = document.createElement('tr');
+        
+        // --- XỬ LÝ NHIỀU LINK ---
+        let linkHtml = "";
+        if(r[15] && r[15].includes('http')) {
+            const links = r[15].toString().split(',').map(l => l.trim()).filter(l => l !== "");
+            // Render mỗi link thành một badge nhỏ gọn
+            linkHtml = links.map((url, idx) => 
+                `<a href="${url}" target="_blank" class="file-badge" title="Xem tài liệu ${idx + 1}">📎 ${idx + 1}</a>`
+            ).join('');
+        }
+        
+        tr.innerHTML = `
+          <td style="text-align:center">${i+1}</td>
+          <td style="text-align:center">${r[4]}</td>
+          <td>${r[0]}</td>
+          <td>${r[1]}</td>
+          <td>${r[2]}</td>
+          <td>${renderContentWithHover(r[5])}</td> 
+          <td>${renderContentWithHover(r[6])}</td> 
+          <td>${renderContentWithHover(r[7])}</td>
+          <td>${renderContentWithHover(r[8])}</td>
+          <td style="text-align:center; font-weight:bold;">${r[9]}</td>
+          <td style="text-align:center; font-weight:bold;">${r[10]}</td>
+          <td style="text-align:center; font-weight:bold;">${r[11]}</td>
+          <td style="text-align:center; font-weight:bold;">${r[12]}</td>
+          <td style="text-align:center;">${renderContentWithHover(r[13])}</td>
+          <td>${renderContentWithHover(r[14])}</td>
+          <td style="text-align:center">${linkHtml}</td>
+          <td style="text-align:center; font-weight:bold; color:#555;">${r[16]}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }).SKT_searchRecords(criteria);
+  }
+
+  function calculateStats(data) {
+    let c = {
+        bgh:0, tcm:0, tvp:0,
+        hs_total:0, hs_tot:0, hs_kha:0, hs_tb:0,
+        gd_total:0, gd_gioi:0, gd_kha:0, gd_tb:0, gd_yeu:0,
+        ks_total:0, ks_tot:0, ks_kha:0, ks_dat:0, ks_yeu:0,
+        khac_total:0, khac_tot:0, khac_kha:0, khac_tb:0, khac_cd:0
+    };
+
+    data.forEach(row => {
+        let bp = String(row[2]||"").toLowerCase().trim();
+        if(bp.includes("ban giám hiệu")) c.bgh++;
+        else if(bp.includes("tổ chuyên môn")) c.tcm++;
+        else if(bp.includes("tổ văn phòng")) c.tvp++;
+
+        let hs = String(row[9]||"").toLowerCase().trim();
+        if(hs !== "") {
+           c.hs_total++;
+           if(hs.includes("tốt") || hs === "t") c.hs_tot++;
+           else if(hs.includes("khá") || hs === "k") c.hs_kha++;
+           else if(hs.includes("trung bình") || hs.includes("tb")) c.hs_tb++;
+        }
+
+        let gd = String(row[10]||"").toLowerCase().trim();
+        if(gd !== "") {
+           c.gd_total++;
+           if(gd.includes("giỏi") || gd === "g") c.gd_gioi++;
+           else if(gd.includes("khá") || gd === "k") c.gd_kha++;
+           else if(gd.includes("trung bình") || gd.includes("tb")) c.gd_tb++;
+           else if(gd.includes("yếu") || gd === "y") c.gd_yeu++;
+        }
+
+        let ks = String(row[11]||"").toLowerCase().trim();
+        if(ks !== "") {
+           c.ks_total++;
+           if(ks.includes("tốt") || ks === "t") c.ks_tot++;
+           else if(ks.includes("khá") || ks === "k") c.ks_kha++;
+           else if(ks.includes("đạt") || ks === "đ" || ks.includes("trung bình") || ks.includes("tb")) c.ks_dat++;
+           else if(ks.includes("yếu") || ks === "y") c.ks_yeu++;
+        }
+
+        // --- Đếm thống kê cho XL khác ---
+        let khac = String(row[12]||"").toLowerCase().trim();
+        if(khac !== "") {
+           c.khac_total++;
+           if(khac.includes("tốt") || khac === "t") c.khac_tot++;
+           else if(khac.includes("khá") || khac === "k") c.khac_kha++;
+           else if(khac.includes("trung bình") || khac.includes("tb")) c.khac_tb++;
+           else if(khac.includes("chưa đạt") || khac === "cd") c.khac_cd++;
+        }
+    });
+
+    document.getElementById('st_total').innerText = data.length;
+    document.getElementById('st_bgh').innerText = c.bgh; 
+    document.getElementById('st_tcm').innerText = c.tcm; 
+    document.getElementById('st_tvp').innerText = c.tvp;
+
+    document.getElementById('st_hs_total').innerText = c.hs_total;
+    document.getElementById('st_hs_tot').innerText = c.hs_tot; 
+    document.getElementById('st_hs_kha').innerText = c.hs_kha; 
+    document.getElementById('st_hs_tb').innerText = c.hs_tb;
+
+    document.getElementById('st_gd_total').innerText = c.gd_total;
+    document.getElementById('st_gd_gioi').innerText = c.gd_gioi; 
+    document.getElementById('st_gd_kha').innerText = c.gd_kha; 
+    document.getElementById('st_gd_tb').innerText = c.gd_tb; 
+    document.getElementById('st_gd_yeu').innerText = c.gd_yeu;
+
+    document.getElementById('st_ks_total').innerText = c.ks_total;
+    document.getElementById('st_ks_tot').innerText = c.ks_tot; 
+    document.getElementById('st_ks_kha').innerText = c.ks_kha; 
+    document.getElementById('st_ks_dat').innerText = c.ks_dat; 
+    document.getElementById('st_ks_yeu').innerText = c.ks_yeu;
+
+    // --- Hiển thị cho XL khác ---
+    document.getElementById('st_khac_total').innerText = c.khac_total;
+    document.getElementById('st_khac_tot').innerText = c.khac_tot;
+    document.getElementById('st_khac_kha').innerText = c.khac_kha;
+    document.getElementById('st_khac_tb').innerText = c.khac_tb;
+    document.getElementById('st_khac_cd').innerText = c.khac_cd;
+  }
+  
+  function clearSearch() {
+    ['s_gv','s_nkt','s_bp','s_from','s_to'].forEach(id=>document.getElementById(id).value="");
+    const d = new Date();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const yyyy = d.getFullYear();
+    const dd = String(d.getDate()).padStart(2, '0');
+    document.getElementById('s_from').value = `01/${mm}/${yyyy}`;
+    document.getElementById('s_to').value = `${dd}/${mm}/${yyyy}`;
+
+    document.getElementById('dashboard_stats').style.display = 'none';
+    document.getElementById('print_link_container').innerHTML = ""; 
+    document.getElementById('searchBody').innerHTML = '<tr><td colspan="17" class="no-result">Vui lòng chọn điều kiện và nhấn Tìm kiếm</td></tr>';
+  }
+
+  function printReport() {
+    const tbody = document.getElementById('searchBody');
+    if (tbody.innerText.includes("Vui lòng chọn") || tbody.innerText.includes("Không tìm thấy") || tbody.rows.length === 0) {
+      showTkModal("⚠️ Vui lòng tìm kiếm và đảm bảo có dữ liệu trước khi in!"); 
+      return;
+    }
+    const btn = document.querySelector('.print-btn');
+    const orgText = btn.innerHTML;
+    const linkContainer = document.getElementById('print_link_container');
+    
+    btn.disabled = true;
+    btn.innerHTML = "⏳";
+    linkContainer.innerHTML = "<span style='color:blue; font-size:12px; margin-left:5px;'>Đang tạo...</span>";
+
+    const criteria = {
+      gv: document.getElementById('s_gv').value,
+      nkt: document.getElementById('s_nkt').value,
+      bp: document.getElementById('s_bp').value,
+      fromDate: document.getElementById('s_from').value,
+      toDate: document.getElementById('s_to').value
+    };
+
+    google.script.run.withSuccessHandler(res => {
+      btn.disabled = false;
+      btn.innerHTML = orgText;
+      if (res.success) {
+        linkContainer.innerHTML = `<a href="${res.url}" target="_blank" class="print-link">🖨️ In sổ kiểm tra</a>`;
+      } else {
+        showTkModal("❌ Lỗi: " + res.message); 
+        linkContainer.innerHTML = "<span style='color:red;'>Lỗi!</span>";
+      }
+    }).SKT_createReportDoc(criteria);
+  }
+
+  function formatDay(e) { 
+      let v=e.target.value.replace(/\D/g,''); 
+      if(v.length>8)v=v.substring(0,8); 
+      let o=""; 
+      if(v.length>0)o+=v.substring(0,2); 
+      if(v.length>2)o+='/'+v.substring(2,4); 
+      if(v.length>4)o+='/'+v.substring(4,8); 
+      e.target.value=o; 
+  }
+
+  function showTkModal(msg) {
+    document.getElementById('tk_modal_message').innerText = msg;
+    document.getElementById('tk_modal_overlay').style.display = 'flex';
+  }
+  function closeTkModal() {
+    document.getElementById('tk_modal_overlay').style.display = 'none';
+  }
+</script>

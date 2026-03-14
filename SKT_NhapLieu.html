@@ -1,0 +1,518 @@
+<style>
+  .cell-input::placeholder { color: #94a3b8 !important; opacity: 0.5; font-style: italic; font-size: 13px; }
+  #mainTable .cell-input::placeholder { opacity: 0.45; }
+  select.cell-input { appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%231e3a8a%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E"); background-repeat: no-repeat; background-position: right 5px top 50%; background-size: 8px auto; padding-right: 15px; text-align-last: center; }
+</style>
+
+<div id="main_content">
+  <div class="header-card">
+    <h1 style="text-align:center; color:var(--brand-red); margin-top:0;">SỔ KIỂM TRA NỘI BỘ TRƯỜNG TIỂU HỌC NGUYỄN DU</h1>
+    <div class="filter-section">
+      <div class="f-item"><span>Giáo viên</span><select id="cbGiaoVien" class="f-input" onchange="onUserChange('GV')"></select></div>
+      <div class="f-item"><span>Người kiểm tra</span><select id="cbNguoiKiemTra" class="f-input" onchange="onUserChange('NKT')"></select></div>
+      <div class="f-item"><span>Bộ phận</span><select id="cbBoPhan" class="f-input" onchange="updateMaBoPhan()"></select></div>
+      <div class="f-item"><span>Mã bộ phận</span><input type="text" id="txtMaBoPhan" class="f-input" readonly style="background:#f3f4f6; text-align:center;"></div>
+      <div class="f-item">
+        <span>Mã hồ sơ (Lịch sử) <button id="btnRefreshMaHoSo" class="refresh-btn" title="Cập nhật danh sách" onclick="refreshMaHoSoList()">↻</button></span>
+        <select id="cbMaHoSo" class="f-input" onchange="onUserChange('MAHS')"></select>
+      </div>
+    </div>
+    
+    <div class="status-stepper">
+      <div id="step1" class="step active">1. CHỜ CHỌN</div>
+      <div id="step2" class="step">2. NẠP DỮ LIỆU</div>
+      <div id="step3" class="step">3. PHÂN QUYỀN</div>
+      <div id="step4" class="step">4. SẴN SÀNG</div>
+      <button id="btnReset" class="btn-row btn-reset" onclick="resetForm()">LÀM MỚI</button>
+      <button id="btnSubmit" class="btn-row btn-submit" onclick="handleSubmit()">NỘP KẾT QUẢ</button>
+      <span id="user_display"></span>
+    </div>
+  </div>
+
+  <div class="table-container">
+    <table id="mainTable">
+      <thead>
+        <tr>
+          <th style="width:35px; text-align:center;">🗑️</th>
+          <th style="width:40px">STT</th>
+          <th style="width:110px">Thời gian</th>
+          <th style="width:140px">Nội dung</th>
+          <th style="width:205px">Ưu điểm</th>
+          <th style="width:195px">Tồn tại</th>
+          <th style="width:180px">Biện pháp</th>
+          <th style="width:55px">XL HS</th>
+          <th style="width:55px">XL GD</th>
+          <th style="width:55px">XL KS</th>
+          <th style="width:55px">XL khác</th>
+          <th style="width:180px">Ý kiến người được KT</th>
+          <th style="width:135px">Ký tên</th>
+          <th style="width:100px">Biên bản đính kèm</th>
+          <th style="width:120px">Mã HS</th>
+        </tr>
+      </thead>
+      <tbody id="tableContent"></tbody>
+    </table>
+    <div class="add-row-container">
+        <button type="button" class="btn-add-row" onclick="addNewRow()"><span>➕</span> Thêm dòng</button>
+    </div>
+  </div>
+
+  <button id="btnSave" class="btn-save" onclick="handleSave()">LƯU KẾT QUẢ</button>
+  <div style="clear:both"></div>
+
+  <div id="customConfirmModal" class="modal-overlay" style="display: none;">
+    <div class="modal-box">
+      <div class="modal-title"><span style="font-size: 20px; margin-right: 2px;">⚠️</span><span>QUAN TRỌNG</span></div>
+      Bạn có chắc chắn muốn xóa?
+      <div class="modal-text">Dữ liệu dòng này trong <b>'NHATKY'</b> (nếu có) cũng sẽ bị xóa vĩnh viễn!<br>Hành động này không thể hoàn tác.</div>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeConfirmModal()">Không xóa</button>
+        <button class="btn-confirm" onclick="processDelete()">Có xóa</button>
+      </div>
+    </div>
+  </div>
+  
+  <div id="modal_overlay_nhap" class="modal-overlay" style="display: none;">
+    <div class="modal-box">
+      <div id="modal_message_nhap" class="modal-text" style="font-weight:bold; margin-top:15px; font-size:16px;"></div>
+      <button class="btn-cancel" onclick="closeModal()">ĐÓNG</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let userEmail = window.SKT_GLOBAL_EMAIL || sessionStorage.getItem("SKT_USER_EMAIL") || ""; 
+  let gvData = [], nktData = [], bpData = {}, maHoSoData = [];
+  let currentRowUpload = null; 
+  let rowToDelete = null; 
+
+  function normStr(str) {
+      if (!str) return "";
+      return String(str).normalize("NFC").toLowerCase().replace(/[\s\uFEFF\xA0]+/g, '');
+  }
+
+  function setComboRobust(id, val) {
+      const el = document.getElementById(id);
+      if(!el) return;
+      const target = normStr(val);
+      for(let i = 0; i < el.options.length; i++) {
+          if(normStr(el.options[i].text) === target || normStr(el.options[i].value) === target) {
+              el.selectedIndex = i;
+              return;
+          }
+      }
+      if(val && val.trim() !== "") {
+          el.add(new Option(val, val));
+          el.selectedIndex = el.options.length - 1; // Bắt buộc chọn chính xác
+      }
+  }
+
+  function getCurrentDate() {
+      const d = new Date();
+      return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+  }
+
+  function returnLinkToMain(url) {
+      if (currentRowUpload) {
+          const cell = currentRowUpload.querySelector('.evidence-cell');
+          const input = currentRowUpload.querySelector('.link-input');
+          const displayArea = currentRowUpload.querySelector('.link-display-area');
+          const uploadBtn = currentRowUpload.querySelector('.btn-upload-icon');
+
+          if (url && url.trim()) {
+              input.value = url;
+              cell.classList.add('evidence-uploaded'); 
+              if(uploadBtn) uploadBtn.style.display = 'none';
+              
+              const links = url.split(',').map(l => l.trim()).filter(l => l !== "");
+              let htmlLinks = links.map((l, idx) => 
+                  `<a href="${l}" target="_blank" style="display:block; text-decoration:none; color:#0369a1; background:#f0f9ff; border:1px solid #bae6fd; border-radius:4px; padding:4px; margin-bottom:4px; font-size:12px; font-weight:bold; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="Xem tài liệu ${idx + 1}">📎 Tài liệu ${idx + 1}</a>`
+              ).join('');
+
+              displayArea.innerHTML = `
+                <div style="max-height:85px; overflow-y:auto; padding:2px; text-align:left;">${htmlLinks}</div>
+                <div style="text-align:center; margin-top:2px;">
+                    <span class="link-edit-corner" onclick="triggerUpload(this)" title="Sửa hoặc thêm tài liệu" style="cursor:pointer; color:#b45309; font-size:11px; font-weight:bold; padding:2px 5px; background:#fef3c7; border-radius:3px; border:1px solid #fde68a; display:inline-block; width:100%; box-sizing:border-box;">✏️ Sửa / Thêm</span>
+                </div>`;
+          } else {
+              input.value = "";
+              cell.classList.remove('evidence-uploaded');
+              if(uploadBtn) uploadBtn.style.display = 'inline-block';
+              displayArea.innerHTML = "";
+          }
+          reCheckEditPermission(currentRowUpload);
+          if(typeof closeModal === 'function') closeModal(); 
+          if(typeof closeUploadModal === 'function') closeUploadModal(); 
+      }
+  }
+
+  function triggerUpload(btn) {
+      const row = btn.closest('tr');
+      const contentInput = row.querySelectorAll('.cell-input')[1]; 
+      if (!contentInput || !contentInput.value.trim()) {
+          showModal("⚠️ Vui lòng nhập 'Nội dung' kiểm tra trước khi đính kèm minh chứng!");
+          contentInput.focus(); return;
+      }
+      currentRowUpload = row;
+      const linkInput = row.querySelector('.link-input'); 
+      if (typeof openUploadModal === 'function') openUploadModal(linkInput ? linkInput.value : ""); 
+      else showModal("⚠️ Chưa tải được chức năng upload!"); 
+  }
+
+  function reCheckEditPermission(row) {
+      const myMail = normStr(window.SKT_GLOBAL_EMAIL || sessionStorage.getItem("SKT_USER_EMAIL") || userEmail);
+      const myNKTName = nktData.find(x => normStr(x.email) === myMail)?.name;
+      const nkt = document.getElementById('cbNguoiKiemTra').value;
+      const isNKT = (myNKTName && normStr(myNKTName) === normStr(nkt));
+      
+      const editBtn = row.querySelector('.link-edit-corner');
+      if(editBtn) {
+          if(!isNKT) {
+              editBtn.classList.add('disabled'); editBtn.style.pointerEvents = 'none'; editBtn.style.opacity = '0.5'; 
+          } else {
+              editBtn.classList.remove('disabled'); editBtn.style.pointerEvents = 'auto'; editBtn.style.opacity = '1';
+          }
+      }
+  }
+
+  function loadData() {
+    toggleSpin('initial', true);
+    google.script.run.withSuccessHandler(data => {
+      if (data.hasPermission === false) {
+          document.getElementById('main_content').style.display = 'none';
+          document.getElementById('access_denied_msg').style.display = 'block';
+          document.getElementById('denied_reason').innerText = data.message;
+          toggleSpin('initial', false);
+          return; 
+      }
+      
+      // Đồng bộ email toàn cục 
+      if(data.currentUserEmail) userEmail = data.currentUserEmail; 
+      gvData = data.giaoVienData; 
+      nktData = data.nguoiKTData; 
+      bpData = data.boPhanData; 
+      maHoSoData = data.maHoSoData;
+      document.getElementById('user_display').innerText = "Đăng nhập: " + userEmail;
+      fillCombo('cbGiaoVien', gvData); 
+      fillCombo('cbNguoiKiemTra', nktData); 
+      fillComboSimple('cbBoPhan', Object.keys(bpData)); 
+      updateMaHoSoCombo(); 
+
+      let myMail = normStr(window.SKT_GLOBAL_EMAIL || sessionStorage.getItem("SKT_USER_EMAIL") || userEmail);
+      let myGVName = gvData.find(x => normStr(x.email) === myMail)?.name;
+      let myNKTName = nktData.find(x => normStr(x.email) === myMail)?.name;
+      
+      if (myGVName && !myNKTName) {
+          setComboRobust('cbGiaoVien', myGVName);
+          document.getElementById('cbGiaoVien').disabled = true; 
+          updatePrefixAllRows();
+          applyPermissions();
+      }
+
+      toggleSpin('initial', false); 
+      setStatus(1);
+    }).SKT_getInitialData();
+  }
+
+  function onUserChange(type) {
+    if ((type === 'GV' || type === 'NKT') && checkDuplicateEmail(type)) return;
+    if (type === 'GV') updatePrefixAllRows();
+    const cb = document.getElementById('cbMaHoSo');
+    if (type === 'MAHS' && cb.value) {
+      toggleSpin('full', true); setStatus(2);
+      google.script.run.withSuccessHandler(r => {
+        toggleSpin('full', false);
+        if (r && r.length > 0) { 
+            const isMultiRow = Array.isArray(r[0]); 
+            const records = isMultiRow ? r : [r];
+
+            let myMail = normStr(window.SKT_GLOBAL_EMAIL || sessionStorage.getItem("SKT_USER_EMAIL") || userEmail);
+            let myGVName = gvData.find(x => normStr(x.email) === myMail)?.name;
+            let myNKTName = nktData.find(x => normStr(x.email) === myMail)?.name;
+            const recordGV = String(records[0][0] || ""); 
+
+            if (myGVName && !myNKTName && normStr(recordGV) !== normStr(myGVName)) {
+                showModal("⛔ BẠN CHỈ ĐƯỢC XEM VÀ KÝ NHẬN HỒ SƠ CỦA CHÍNH MÌNH!");
+                resetForm(); 
+                return;
+            }
+
+            fillRecordToWeb(records); 
+            setStatus(3); 
+            ['cbGiaoVien','cbNguoiKiemTra','cbBoPhan'].forEach(id=>document.getElementById(id).disabled=true);
+            setTimeout(() => { applyPermissions(); setStatus(4); }, 300);
+        } else setStatus(1);
+      }).SKT_getRecordByMaHS(cb.value);
+    } else applyPermissions();
+  }
+
+  // --- HÀM PHÂN QUYỀN MỚI: BẺ KHÓA TRÌNH DUYỆT ---
+  function applyPermissions() {
+    const cbGV = document.getElementById('cbGiaoVien');
+    const cbNKT = document.getElementById('cbNguoiKiemTra');
+    
+    // Đọc chính xác giá trị dù bị mờ (disabled)
+    const gv = String(cbGV.options[cbGV.selectedIndex]?.text || cbGV.value || "").trim();
+    const nkt = String(cbNKT.options[cbNKT.selectedIndex]?.text || cbNKT.value || "").trim();
+    
+    const btnSave = document.getElementById('btnSave');
+    const btnSubmit = document.getElementById('btnSubmit');
+    const btnAddContainer = document.querySelector('.add-row-container'); 
+    
+    const myMail = normStr(window.SKT_GLOBAL_EMAIL || sessionStorage.getItem("SKT_USER_EMAIL") || userEmail);
+    const myGVName = gvData.find(x => normStr(x.email) === myMail)?.name;
+    const myNKTName = nktData.find(x => normStr(x.email) === myMail)?.name;
+
+    const isGV = (myGVName && normStr(myGVName) === normStr(gv));
+    const isNKT = (myNKTName && normStr(myNKTName) === normStr(nkt));
+
+    if (isNKT) { btnSubmit.disabled = false; btnSubmit.style.opacity = "1"; } 
+    else { btnSubmit.disabled = true; btnSubmit.style.opacity = "0.5"; }
+
+    if (isGV || isNKT) { btnSave.disabled = false; btnSave.style.opacity = "1"; } 
+    else { btnSave.disabled = true; btnSave.style.opacity = "0.5"; }
+
+    if(btnAddContainer) btnAddContainer.style.display = isNKT ? 'block' : 'none';
+
+    document.querySelectorAll('#tableContent tr').forEach(row => {
+        const ins = row.querySelectorAll('.cell-input');
+        ins.forEach((c, i) => {
+            const isYkienHoacKyTen = (i === 9 || i === 10); 
+            
+            // Ép buộc trình duyệt xóa bỏ lệnh khóa bằng removeAttribute
+            if (isGV && isNKT) {
+                c.removeAttribute('disabled');
+            } else if (isGV) {
+                if (isYkienHoacKyTen) c.removeAttribute('disabled');
+                else c.setAttribute('disabled', 'true');
+            } else if (isNKT) {
+                if (!isYkienHoacKyTen) c.removeAttribute('disabled');
+                else c.setAttribute('disabled', 'true');
+            } else {
+                c.setAttribute('disabled', 'true');
+            }
+        });
+        
+        const btnUp = row.querySelector('.btn-upload-icon');
+        const btnDel = row.querySelector('.btn-icon-del');
+        const btnEdit = row.querySelector('.link-edit-corner'); 
+
+        if(btnUp) btnUp.disabled = !isNKT;
+        if(btnDel) { btnDel.disabled = !isNKT; btnDel.style.visibility = isNKT ? 'visible' : 'hidden'; }
+        if(btnEdit) {
+            if(!isNKT) { btnEdit.classList.add('disabled'); btnEdit.style.pointerEvents = 'none'; btnEdit.style.opacity = '0.5'; } 
+            else { btnEdit.classList.remove('disabled'); btnEdit.style.pointerEvents = 'auto'; btnEdit.style.opacity = '1'; }
+        }
+    });
+
+    if (!gv || !nkt) {
+        btnSave.disabled = true; btnSubmit.disabled = true;
+        btnSave.style.opacity = "0.5"; btnSubmit.style.opacity = "0.5";
+    }
+  }
+
+  function addNewRow(data = null) {
+    const ts = new Date().getTime().toString().slice(-5);
+    const randomId = Math.floor(Math.random() * 1000); 
+    const tbody = document.getElementById('tableContent');
+    const tr = document.createElement('tr');
+    
+    const optHS = '<option value=""></option><option value="Tốt">Tốt</option><option value="Khá">Khá</option><option value="TB">TB</option>';
+    const optGD = '<option value=""></option><option value="Giỏi">Giỏi</option><option value="Khá">Khá</option><option value="TB">TB</option><option value="Yếu">Yếu</option>';
+    const optKS = '<option value=""></option><option value="Tốt">Tốt</option><option value="Khá">Khá</option><option value="Đạt">Đạt</option><option value="Yếu">Yếu</option>';
+    const optKhac = '<option value=""></option><option value="Tốt">Tốt</option><option value="Khá">Khá</option><option value="TB">TB</option><option value="Chưa đạt">Chưa đạt</option>';
+
+    tr.innerHTML = `
+      <td style="text-align:center;vertical-align:middle"><button class="btn-icon-del" onclick="removeRow(this)" title="Xóa dòng">🗑️</button></td>
+      <td style="text-align:center;vertical-align:middle" class="stt-cell"></td>
+      <td><input class="cell-input text-center" value="${getCurrentDate()}" oninput="formatDay(event)" placeholder="dd/mm/yyyy" disabled></td>
+      <td><textarea class="cell-input" rows="1" oninput="autoResize(this)" disabled></textarea></td>
+      <td><textarea class="cell-input" rows="1" oninput="autoResize(this)" disabled></textarea></td>
+      <td><textarea class="cell-input" rows="1" oninput="autoResize(this)" disabled></textarea></td>
+      <td><textarea class="cell-input" rows="1" oninput="autoResize(this)" disabled></textarea></td>
+      <td><select class="cell-input text-center" disabled>${optHS}</select></td>
+      <td><select class="cell-input text-center" disabled>${optGD}</select></td>
+      <td><select class="cell-input text-center" disabled>${optKS}</select></td>
+      <td><select class="cell-input text-center" disabled>${optKhac}</select></td>
+      <td><textarea class="cell-input text-center" rows="1" oninput="autoResize(this)" style="text-align:center; padding-top:10px;" placeholder="(Ý kiến của giáo viên)" disabled></textarea></td>
+      <td><textarea class="cell-input text-center" rows="1" oninput="autoResize(this)" style="text-align:center; padding-top:10px; overflow:hidden;" placeholder="(Ghi họ và tên)" disabled></textarea></td>
+      <td style="text-align:center;vertical-align:middle; padding:5px;" class="evidence-cell">
+          <input type="hidden" class="cell-input link-input">
+          <div class="link-display-area" style="width:100%;"></div>
+          <button class="btn-upload-icon" onclick="triggerUpload(this)" title="Chèn minh chứng">📎 Đính kèm</button>
+      </td>
+      <td class="ma-ho-so-cell">MS-${ts}-${randomId}</td>
+    `;
+    tbody.appendChild(tr);
+    updateSTT(); updatePrefixAllRows();
+    
+    if(data) {
+       const ins = tr.querySelectorAll('.cell-input');
+       for(let j=0; j<=10; j++) ins[j].value = data[j+4] || ""; 
+       const linkUrl = data[15]||"";
+       if(linkUrl) { currentRowUpload = tr; returnLinkToMain(linkUrl); }
+       tr.querySelector('.ma-ho-so-cell').innerText = data[16]||`MS-${ts}-${randomId}`;
+       tr.querySelectorAll('textarea').forEach(t => autoResize(t));
+    }
+    applyPermissions();
+  }
+
+  function handleSave() { if(validateSave()) exeServer("SKT_saveRecord", document.getElementById('btnSave'), "LƯU KẾT QUẢ"); }
+  function handleSubmit() { if(validateSubmit()) exeServer("SKT_submitFinalRecord", document.getElementById('btnSubmit'), "NỘP KẾT QUẢ"); }
+
+  function exeServer(fn, btn, txt) {
+    const gv = document.getElementById('cbGiaoVien').value;
+    const nkt = document.getElementById('cbNguoiKiemTra').value;
+    const bp = document.getElementById('cbBoPhan').value;
+    const mabp = document.getElementById('txtMaBoPhan').value;
+    const dataToSend = [];
+    document.querySelectorAll('#tableContent tr').forEach(r => {
+        const ins = r.querySelectorAll('.cell-input');
+        dataToSend.push([gv, nkt, bp, mabp, ins[0].value, ins[1].value, ins[2].value, ins[3].value, ins[4].value, ins[5].value, ins[6].value, ins[7].value, ins[8].value, ins[9].value, ins[10].value, ins[11].value, r.querySelector('.ma-ho-so-cell').innerText]);
+    });
+    btn.disabled = true; btn.innerText = "⏳ XỬ LÝ..."; btn.classList.add('loading-spin');
+    google.script.run.withSuccessHandler(r => {
+      btn.disabled = false; btn.innerText = txt; btn.classList.remove('loading-spin'); showModal(r);
+      if(!r.includes("⚠️") && !r.includes("❌")) { setTimeout(refreshMaHoSoList, 500); resetForm(); }
+    })[fn](dataToSend);
+  }
+
+  function checkDuplicateEmail(type) {
+    const gv = document.getElementById('cbGiaoVien').value;
+    const nkt = document.getElementById('cbNguoiKiemTra').value;
+    if (!gv || !nkt) return false;
+    const eGV = gvData.find(x => normStr(x.name) === normStr(gv))?.email;
+    const eNKT = nktData.find(x => normStr(x.name) === normStr(nkt))?.email;
+    if (eGV && eNKT && eGV === eNKT) {
+      showModal("⚠️ LỖI: Email người kiểm tra và giáo viên trùng nhau!");
+      document.getElementById(type === 'GV' ? 'cbGiaoVien' : 'cbNguoiKiemTra').value = ""; return true; 
+    }
+    return false;
+  }
+
+  function updateSTT() { document.querySelectorAll('#tableContent tr').forEach((r, i) => r.querySelector('.stt-cell').innerText = i + 1); }
+  function fillCombo(id, d) { const e = document.getElementById(id); e.innerHTML='<option value="">-- Chọn --</option>'; d.forEach(i=>e.add(new Option(i.name,i.name))); }
+  function fillComboSimple(id, l) { const e = document.getElementById(id); e.innerHTML='<option value="">-- Chọn --</option>'; if(l) l.forEach(v=>v&&e.add(new Option(v,v))); }
+  function updateMaBoPhan() { document.getElementById('txtMaBoPhan').value = bpData[document.getElementById('cbBoPhan').value]||""; }
+  function showModal(m) { document.getElementById('modal_message_nhap').innerText=m; document.getElementById('modal_overlay_nhap').style.display='flex'; }
+  function closeModal() { document.getElementById('modal_overlay_nhap').style.display='none'; }
+  function autoResize(e) { e.style.height='auto'; e.style.height=e.scrollHeight+'px'; }
+  function formatDay(e) { let v=e.target.value.replace(/\D/g,''); if(v.length>8)v=v.substring(0,8); let o=""; if(v.length>0)o+=v.substring(0,2); if(v.length>2)o+='/'+v.substring(2,4); if(v.length>4)o+='/'+v.substring(4,8); e.target.value=o; }
+  function toggleSpin(t,l) { document.querySelectorAll('.f-input, .cell-input').forEach(i=>i.classList[l?'add':'remove']('loading-spin')); }
+  function setStatus(s) { for(let i=1;i<=4;i++){ let e=document.getElementById('step'+i); if(e){ e.className='step'; if(i<s)e.classList.add('completed'); if(i===s)e.classList.add('active'); }}}
+  
+  function resetForm() {
+    ['cbNguoiKiemTra', 'cbBoPhan', 'cbMaHoSo'].forEach(id => {
+      const el = document.getElementById(id); if(el) { el.value = ""; el.disabled = false; }
+    });
+    
+    let myMail = normStr(window.SKT_GLOBAL_EMAIL || sessionStorage.getItem("SKT_USER_EMAIL") || userEmail);
+    let myGVName = gvData.find(x => normStr(x.email) === myMail)?.name;
+    let myNKTName = nktData.find(x => normStr(x.email) === myMail)?.name;
+    const cbGV = document.getElementById('cbGiaoVien');
+
+    if (myGVName && !myNKTName) {
+        setComboRobust('cbGiaoVien', myGVName);
+        cbGV.disabled = true;
+    } else {
+        cbGV.value = "";
+        cbGV.disabled = false;
+    }
+
+    document.getElementById('txtMaBoPhan').value = "";
+    document.getElementById('tableContent').innerHTML = ""; 
+    addNewRow(); setStatus(1);
+  }
+
+  function updateMaHoSoCombo() {
+    const cb = document.getElementById('cbMaHoSo'); const cur = cb.value;
+    cb.innerHTML = '<option value="">-- Chọn --</option>';
+    if (maHoSoData && maHoSoData.length > 0) {
+      const sorted = [...maHoSoData].sort().reverse();
+      sorted.forEach(m => cb.add(new Option(m, m)));
+      if (cur) cb.value = cur;
+      document.getElementById('btnRefreshMaHoSo').title = `Danh sách (${sorted.length})`;
+    }
+  }
+
+  function refreshMaHoSoList() {
+    const btn = document.getElementById('btnRefreshMaHoSo'); const txt = btn.innerHTML;
+    btn.disabled = true; btn.innerHTML = "⏳";
+    google.script.run.withSuccessHandler(r => {
+      btn.disabled = false; btn.innerHTML = txt;
+      if(r.success) { maHoSoData = r.maHoSoData; updateMaHoSoCombo(); showModal(`✅ Đã cập nhật ${r.maHoSoData.length} hồ sơ`); }
+      else showModal("❌ Lỗi: " + r.message);
+    }).SKT_getUpdatedMaHoSoList();
+  }
+
+  function validateSave() {
+    if (!document.getElementById('cbGiaoVien').value || !document.getElementById('cbNguoiKiemTra').value || !document.getElementById('cbBoPhan').value) { showModal("⚠️ Chưa có đủ thông tin chung!"); return false; }
+    var firstContent = document.querySelectorAll('#tableContent tr')[0].querySelectorAll('.cell-input')[1]; 
+    if (!firstContent || !firstContent.value.trim()) { showModal("⚠️ Chưa có nội dung kiểm tra ở dòng 1!"); return false; }
+    return true;
+  }
+
+  function validateSubmit() {
+    if (!validateSave()) return false;
+    let valid = true;
+    document.querySelectorAll('#tableContent tr').forEach((r, idx) => {
+        const ins = r.querySelectorAll('.cell-input');
+        if (!ins[9].value.trim()) { showModal(`⚠️ Dòng ${idx+1}: Thiếu Ý kiến người được kiểm tra!`); ins[9].focus(); valid = false; return; }
+        if (!ins[10].value.trim()) { showModal(`⚠️ Dòng ${idx+1}: Thiếu chữ ký xác nhận của người được kiểm tra!`); ins[10].focus(); valid = false; return; }
+    });
+    return valid;
+  }
+
+  function fillRecordToWeb(records) {
+    if(!records || records.length === 0) return;
+    const r0 = records[0];
+    
+    setComboRobust('cbGiaoVien', r0[0]);
+    setComboRobust('cbNguoiKiemTra', r0[1]);
+    setComboRobust('cbBoPhan', r0[2]);
+    document.getElementById('txtMaBoPhan').value = String(r0[3]||"").trim();
+    
+    document.getElementById('tableContent').innerHTML = "";
+    records.forEach(rowData => addNewRow(rowData));
+    document.querySelectorAll('textarea.cell-input').forEach(t => autoResize(t));
+  }
+
+  function updatePrefixAllRows() { 
+    const n = document.getElementById('cbGiaoVien').value; if(!n) return;
+    const p = n.normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/\s+/g,'');
+    document.querySelectorAll('.ma-ho-so-cell').forEach(c => {
+        const currentText = c.innerText;
+        if(currentText.includes('-')) c.innerText = p + currentText.substring(currentText.indexOf('-'));
+    });
+  }
+
+  function removeRow(btn) {
+      const myMail = normStr(window.SKT_GLOBAL_EMAIL || sessionStorage.getItem("SKT_USER_EMAIL") || userEmail);
+      const myNKTName = nktData.find(x => normStr(x.email) === myMail)?.name;
+      const nkt = document.getElementById('cbNguoiKiemTra').value;
+      const isNKT = (myNKTName && normStr(myNKTName) === normStr(nkt));
+      
+      if (!isNKT) { showModal("⚠️ Bạn không có quyền xóa dòng này!"); return; }
+      const tbody = document.getElementById('tableContent');
+      if(tbody.rows.length <= 1) { showModal("⚠️ Phải giữ lại ít nhất một dòng!"); return; }
+      rowToDelete = btn.closest('tr'); document.getElementById('customConfirmModal').style.display = 'flex';
+  }
+
+  function closeConfirmModal() { rowToDelete = null; document.getElementById('customConfirmModal').style.display = 'none'; }
+  function processDelete() {
+      if (!rowToDelete) return;
+      const maHS = rowToDelete.querySelector('.ma-ho-so-cell').innerText;
+      const btnDel = rowToDelete.querySelector('.btn-icon-del');
+      if (btnDel) { btnDel.setAttribute('data-original', btnDel.innerHTML); btnDel.innerHTML = '⏳'; btnDel.disabled = true; }
+      closeConfirmModal(); 
+      google.script.run.withSuccessHandler(function(response) {
+          if (response === "SUCCESS") {
+              rowToDelete.style.transition = "all 0.5s ease"; rowToDelete.style.opacity = "0"; rowToDelete.style.transform = "translateX(50px)";
+              setTimeout(() => { rowToDelete.remove(); updateSTT(); if(document.getElementById('tableContent').rows.length === 0) addNewRow(); }, 500);
+          } else if (response === "NO_PERMISSION") { showModal("⛔ Bạn không có quyền xóa dữ liệu này!"); resetDeleteBtn(btnDel);
+          } else { showModal("❌ " + response); resetDeleteBtn(btnDel); }
+      }).withFailureHandler(function(err) { showModal("❌ Lỗi kết nối: " + err); resetDeleteBtn(btnDel); }).SKT_deleteSingleRowNhatKy(maHS);
+  }
+
+  function resetDeleteBtn(btn) { if(btn) { btn.innerHTML = btn.getAttribute('data-original') || '🗑️'; btn.disabled = false; } rowToDelete = null; }
+</script>
