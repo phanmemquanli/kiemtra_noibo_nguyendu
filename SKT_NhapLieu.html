@@ -247,6 +247,7 @@
   }
 
   // --- HÀM PHÂN QUYỀN MỚI: BẺ KHÓA TRÌNH DUYỆT ---
+ // --- HÀM PHÂN QUYỀN (ĐÃ BỔ SUNG KHOÁ FILE ĐÍNH KÈM) ---
   function applyPermissions() {
     const cbGV = document.getElementById('cbGiaoVien');
     const cbNKT = document.getElementById('cbNguoiKiemTra');
@@ -302,6 +303,27 @@
         if(btnEdit) {
             if(!isNKT) { btnEdit.classList.add('disabled'); btnEdit.style.pointerEvents = 'none'; btnEdit.style.opacity = '0.5'; } 
             else { btnEdit.classList.remove('disabled'); btnEdit.style.pointerEvents = 'auto'; btnEdit.style.opacity = '1'; }
+        }
+
+        // --- BỔ SUNG: KHOÁ XEM FILE ĐÍNH KÈM NẾU KHÔNG PHẢI GV HOẶC NKT ---
+        const linkDisplayArea = row.querySelector('.link-display-area');
+        if (linkDisplayArea) {
+            const links = linkDisplayArea.querySelectorAll('a');
+            let lockMsg = linkDisplayArea.querySelector('.locked-file-msg');
+
+            if (!isGV && !isNKT) {
+                // 1. Ẩn tất cả các thẻ a (đường link)
+                links.forEach(a => a.style.display = 'none');
+                
+                // 2. Hiện thông báo bị khoá nếu có minh chứng
+                if (links.length > 0 && !lockMsg) {
+                    linkDisplayArea.insertAdjacentHTML('beforeend', '<div class="locked-file-msg" style="color:#dc3545; font-size:11px; font-weight:bold; text-align:center; padding: 4px; border: 1px dashed #dc3545; border-radius: 4px; background: #f8d7da; margin-bottom:4px;">🔒 Không có quyền xem</div>');
+                }
+            } else {
+                // Nếu là người có quyền: Hiện lại link, xoá thông báo khoá
+                links.forEach(a => a.style.display = 'block');
+                if (lockMsg) lockMsg.remove();
+            }
         }
     });
 
