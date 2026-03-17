@@ -2,11 +2,14 @@
   .cell-input::placeholder { color: #94a3b8 !important; opacity: 0.5; font-style: italic; font-size: 13px; }
   #mainTable .cell-input::placeholder { opacity: 0.45; }
   select.cell-input { appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%231e3a8a%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E"); background-repeat: no-repeat; background-position: right 5px top 50%; background-size: 8px auto; padding-right: 15px; text-align-last: center; }
+  
+  /* ĐÃ CẬP NHẬT: Căn giữa tiêu đề bảng */
+  th { text-align: center !important; vertical-align: middle !important; }
 </style>
 
 <div id="main_content">
   <div class="header-card">
-    <h1 style="text-align:center; color:var(--brand-red); margin-top:0;">SỔ KIỂM TRA NỘI BỘ TRƯỜNG TIỂU HỌC NGUYỄN DU</h1>
+   <h1 style="text-align:center; color:var(--brand-red); margin-top:0; font-family: 'Times New Roman', serif; font-size: 22px; font-weight: bold;">SỔ KIỂM TRA NỘI BỘ TRƯỜNG TIỂU HỌC KIM ĐỒNG</h1>
     <div class="filter-section">
       <div class="f-item"><span>Giáo viên</span><select id="cbGiaoVien" class="f-input" onchange="onUserChange('GV')"></select></div>
       <div class="f-item"><span>Người kiểm tra</span><select id="cbNguoiKiemTra" class="f-input" onchange="onUserChange('NKT')"></select></div>
@@ -246,8 +249,7 @@
     } else applyPermissions();
   }
 
-  // --- HÀM PHÂN QUYỀN MỚI: BẺ KHÓA TRÌNH DUYỆT ---
- // --- HÀM PHÂN QUYỀN (ĐÃ BỔ SUNG KHOÁ FILE ĐÍNH KÈM) ---
+  // --- HÀM PHÂN QUYỀN (ĐÃ BỔ SUNG KHOÁ FILE ĐÍNH KÈM) ---
   function applyPermissions() {
     const cbGV = document.getElementById('cbGiaoVien');
     const cbNKT = document.getElementById('cbNguoiKiemTra');
@@ -538,3 +540,4 @@
 
   function resetDeleteBtn(btn) { if(btn) { btn.innerHTML = btn.getAttribute('data-original') || '🗑️'; btn.disabled = false; } rowToDelete = null; }
 </script>
+</div>
